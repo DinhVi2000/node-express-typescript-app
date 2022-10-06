@@ -1,5 +1,8 @@
 import { NextFunction, Request, Response } from "express";
+import { IncomingHttpHeaders } from "http";
+import { ExtendRequest } from "../helper/express-extend";
 import { ErrorMessages, ResponseCodes } from "../helper/response-codes";
+import { UserService } from "../services/user.service";
 import { publicPaths } from "./public-path";
 
 export const isPublicPath = (req: Request): boolean => {
@@ -9,13 +12,24 @@ export const isPublicPath = (req: Request): boolean => {
   return false;
 };
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
-  let isPublic = isPublicPath(req);
+const getTokenFromHeaders = (headers: IncomingHttpHeaders) => {
+  return headers["x-access-token"] as string;
+};
 
-  if (isPublic) {
-    return next();
-  }
-  res.json({
-    error: ResponseCodes[ResponseCodes.token_missing_or_invalid],
-  });
+export const auth = async (
+  req: ExtendRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  let isPublic = isPublicPath(req);
+  if (isPublic) return next();
+
+  const token = getTokenFromHeaders(req.headers);
+  const decoded = await UserService.verifyToken(token);
+  if (!decoded)
+    return res.json({
+      error: ResponseCodes[ResponseCodes.token_missing_or_invalid],
+    });
+  req.decodedToken = decoded;
+  return next();
 };

@@ -5,6 +5,8 @@ import express, {
   Response,
 } from "express";
 
+import cors from "cors";
+
 import * as bodyParser from "body-parser";
 import { config } from "dotenv";
 import { databaseMigration } from "./migrations/migration";
@@ -36,9 +38,10 @@ class App {
   public async init() {
     await databaseMigration();
 
-    this.app.use(errorHandler);
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
+    this.app.use(cors());
+    this.app.use(errorHandler);
     this.app.use("/api", auth);
     this.app.use("/api/v1", routes);
   }

@@ -30,14 +30,6 @@ export class UserService {
     } catch (e) {
       throw e;
     }
-
-    // console.log("this._saltRounds :", this._saltRounds);
-    // return bcrypt.hash(password, this._saltRounds).then((hash) => {
-    //   console.log("hash :", hash);
-    //   return User.create({ email, password: hash }).then((u: any) =>
-    //     this.getUserById(u!.id)
-    //   );
-    // });
   };
 
   static login = async (email: string, res: Response) => {
@@ -48,25 +40,30 @@ export class UserService {
     });
     if (!user) return res.send(ResponseCodes.user_not_found);
 
-    return { user, token: jwt.sign({ id: user.id, email }, this._jwtSecret) };
+    return {
+      user,
+      token: jwt.sign({ user }, this._jwtSecret, {
+        algorithm: "HS256",
+      }),
+    };
   };
 
-  //   verifyToken(token: string) {
-  //     return new Promise((resolve, reject) => {
-  //       jwt.verify(token, this._jwtSecret, (err, decoded) => {
-  //         if (err) {
-  //           resolve(false);
-  //           return;
-  //         }
+  static verifyToken = async (token: string) => {
+    try {
+      return await jwt.verify(
+        token,
+        this._jwtSecret,
+        async (err, decoded: any) => {
+          if (err) return false;
+          if (decoded) return decoded;
+        }
+      );
+    } catch (e) {
+      return false;
+    }
+  };
 
-  //         UserService._user = User.findOne({ id: decoded["id"] });
-  //         resolve(true);
-  //         return;
-  //       });
-  //     }) as Promise<boolean>;
-  //   }
-
-  static getUserById(id: number) {
-    return User.findOne({ where: { id }, attributes: Attributes.user });
-  }
+  static getUserById = async (id: number) => {
+    return await User.findOne({ where: { id }, attributes: Attributes.user });
+  };
 }

@@ -12,25 +12,7 @@ import sequelize from "sequelize";
 let mySequelize: Sequelize;
 
 const databaseMigration = async () => {
-
-  let configPath = path.join(
-    __dirname,
-    "../models/config" + path.extname(__filename)
-  );
-  console.log("configPath", configPath);
-
-  let modelsPath = path.join(__dirname, "../models/schema");
-  console.log("modelsPath", modelsPath);
-
-  let migartionsPath = path.join(__dirname, "../models/migration");
-  console.log("migartionsPath", migartionsPath);
-
-  let seedsPath = path.join(__dirname, "../models/seeds");
-  console.log("seedsPath", seedsPath);
-
   const models: any = schemas;
-
-
   try {
     console.log("Connecting to mysql...");
     mySequelize = new Sequelize(
@@ -78,9 +60,9 @@ const databaseMigration = async () => {
     // Object.keys(models).forEach((x) => {
     //   models[x].sync({ force: true, alter: true });
     // });
-    mySequelize.sync({ alter: true })
+    mySequelize.sync({ alter: true });
   } catch (err: any) {
-    console.log('err :', err);
+    console.log("err :", err);
     return new Promise((_, reject) => reject(false));
   }
   console.log("Finished migration");
